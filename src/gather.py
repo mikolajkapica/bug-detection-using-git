@@ -21,6 +21,8 @@ if __name__ == "__main__":
         for commit_hash in hashes
     }
 
+    # TODO: dopisac 10 komitow bugowych i normalnych -->>> zwalidowac potem czy dziala
+
     file_name = (
         DATASET_DIRECTORY
         + "/"
