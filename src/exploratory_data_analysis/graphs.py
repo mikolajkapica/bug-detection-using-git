@@ -40,7 +40,7 @@ def authors_ratio(all_commits: Iterable, bugs: Iterable, n: int = 10) -> None:
     author_commits = Counter([commit.author.name for commit in all_commits])
     author_bugs = Counter([bug.author.name for bug in bugs])
 
-    authors = sorted(author_commits.keys(), key=lambda x: author_commits[x])[:n:-1]
+    authors = sorted(author_commits.keys(), key=lambda x: author_commits[x])[::-1][:n]
     commits = [author_commits[author] for author in authors]
     bugs = [author_bugs[author] for author in authors]
 
