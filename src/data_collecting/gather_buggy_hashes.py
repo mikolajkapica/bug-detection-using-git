@@ -1,17 +1,16 @@
+from datetime import datetime as dt
 import pydriller
 import re
-from datetime import datetime as dt
 
 RE_FIX_COMMIT = re.compile(r"(?i)(fix(e[sd])?|bug(s)?)")
-GIT_REPO_PATH = "C:/Users/mikol/Desktop/vscode"
 
-DATASET_DIRECTORY = "./dataset"
-DATASET_BASENAME = "bugs"
+DATASET_DIRECTORY = "../dataset"
+DATASET_BASENAME = "buggy_hashes"
 DATASET_EXTENSION = ".txt"
 
 
-if __name__ == "__main__":
-    repo = pydriller.Git(GIT_REPO_PATH)
+def gather(git_repo_path: str) -> None:
+    repo = pydriller.Git(git_repo_path)
 
     buggy_commits = {
         commit_hash
@@ -20,8 +19,6 @@ if __name__ == "__main__":
         for hashes in repo.get_commits_last_modified_lines(fix_commit).values()
         for commit_hash in hashes
     }
-
-    # TODO: dopisac 10 komitow bugowych i normalnych -->>> zwalidowac potem czy dziala
 
     file_name = (
         DATASET_DIRECTORY
@@ -32,6 +29,6 @@ if __name__ == "__main__":
         + DATASET_EXTENSION
     )
 
-    with open(file_name, "w", newline="") as f:
+    with open(file_name, "w+", newline="") as f:
         for commit in buggy_commits:
             f.write(f"{commit}\n")
