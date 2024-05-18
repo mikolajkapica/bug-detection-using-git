@@ -5,7 +5,7 @@ from src.data_collecting.serialize_commits import serialize
 from src.data_collecting.deserialize_commits import deserialize
 
 
-DATASET_DIRECTORY = "../../dataset"
+DATASET_DIRECTORY = "../../raw_dataset"
 NOW = datetime.now().strftime("%d-%m-%Y_%H-%M")
 
 GIT_REPO_PATH = "C:/Users/mikol/Desktop/vscode"
