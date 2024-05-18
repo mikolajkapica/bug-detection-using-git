@@ -1,18 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import StandardScaler
-
-NORMAL_COMMITS_JSONL = "../../raw_dataset/normal_commits.jsonl"
-BUGGY_COMMITS_JSONL = "../../raw_dataset/buggy_commits.jsonl"
-
-NORMAL_COMMITS_PREPROCESSED_PATH = "../../preprocessed_data/normal_commits.jsonl"
-BUGGY_COMMITS_PREPROCESSED_PATH = "../../preprocessed_data/buggy_commits.jsonl"
-
-
-def drop_hash(df: pd.DataFrame) -> pd.DataFrame:
-    df.drop("hash", axis=1, inplace=True)
-    return df
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
 def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
@@ -37,7 +26,7 @@ def normalization(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
-    df["ratio_insertions_deletions"] = df["insertions"] / df["deletions"]
+    df["ratio_insertions_deletions"] = df["insertions"] / df["lines"]
     df["msg_length"] = df["msg"].apply(len)
     return df
 
@@ -49,7 +38,8 @@ def binary_encoding(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def one_hot_encoding_author_name(df: pd.DataFrame) -> pd.DataFrame:
-    df = pd.get_dummies(df, columns=["author_name"])
+    pd.concat([df, pd.get_dummies(df["author_name"])], axis=1)
+    df = df.drop("author_name", axis=1)
     return df
 
 
@@ -70,25 +60,37 @@ def tf_idf_msg(df: pd.DataFrame) -> pd.DataFrame:
     tfidf_df = pd.DataFrame(
         tfidf_matrix.toarray(), columns=tfidf_vectorizer.get_feature_names_out()
     )
+    tfidf_df.columns = [f"{column}_tfidf" for column in tfidf_df.columns]
     df = pd.concat([df, tfidf_df], axis=1)
+    df = df.drop("msg", axis=1)
+    return df
+
+
+def dmm_fill_na_with_mean(df):
+    df["dmm_unit_size"] = df["dmm_unit_size"].fillna(df["dmm_unit_size"].mean())
+    df["dmm_unit_complexity"] = df["dmm_unit_complexity"].fillna(
+        df["dmm_unit_complexity"].mean()
+    )
+    df["dmm_unit_interfacing"] = df["dmm_unit_interfacing"].fillna(
+        df["dmm_unit_interfacing"].mean()
+    )
+    return df
+
+
+def drop_merge_commits(df):
+    df = df[df["merge"] == 0]
     return df
 
 
 def preprocess(df: pd.DataFrame) -> pd.DataFrame:
-    df = drop_hash(df)
+    df = df.drop("hash", axis=1)
     df = drop_outliers(df)
-    df = normalization(df)
     df = feature_engineering(df)
     df = binary_encoding(df)
     df = one_hot_encoding_author_name(df)
     df = transformation_date(df)
     df = tf_idf_msg(df)
+    df = normalization(df)
+    df = dmm_fill_na_with_mean(df)
+    df = drop_merge_commits(df)
     return df
-
-
-if __name__ == "__main__":
-    pd.set_option("display.max_columns", None)
-
-    df = pd.read_json(NORMAL_COMMITS_JSONL, lines=True)
-    df = preprocess(df)
-    print(df.head())
