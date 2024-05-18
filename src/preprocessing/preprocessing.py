@@ -16,13 +16,7 @@ def drop_hash(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
-    # maybe use quantile instead of mean and std
     df = df[df["lines"] < df["lines"].quantile(0.99)]
-
-    # mean = df["lines"].mean()
-    # std = df["lines"].std()
-    # df = df[df["lines"] < mean + 5 * std]
-    # df = df[df["lines"] > mean - 5 * std]
     return df
 
 
