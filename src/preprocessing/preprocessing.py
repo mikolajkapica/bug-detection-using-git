@@ -10,20 +10,23 @@ NORMAL_COMMITS_PREPROCESSED_PATH = "../../preprocessed_data/normal_commits.jsonl
 BUGGY_COMMITS_PREPROCESSED_PATH = "../../preprocessed_data/buggy_commits.jsonl"
 
 
-def drop_hash(df):
+def drop_hash(df: pd.DataFrame) -> pd.DataFrame:
     df.drop("hash", axis=1, inplace=True)
     return df
 
 
-def drop_outliers(df):
-    mean = df["lines"].mean()
-    std = df["lines"].std()
-    df = df[df["lines"] < mean + 5 * std]
-    df = df[df["lines"] > mean - 5 * std]
+def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
+    # maybe use quantile instead of mean and std
+    df = df[df["lines"] < df["lines"].quantile(0.99)]
+
+    # mean = df["lines"].mean()
+    # std = df["lines"].std()
+    # df = df[df["lines"] < mean + 5 * std]
+    # df = df[df["lines"] > mean - 5 * std]
     return df
 
 
-def normalization(df):
+def normalization(df: pd.DataFrame) -> pd.DataFrame:
     scaler = StandardScaler()
     columns_to_normalize = [
         "deletions",
@@ -34,37 +37,40 @@ def normalization(df):
         "dmm_unit_complexity",
         "dmm_unit_interfacing",
     ]
-    df[columns_to_normalize] = scaler.fit_transform(df[columns_to_normalize])
+    df = df.astype({column: float for column in columns_to_normalize})
+    df.loc[:, columns_to_normalize] = scaler.fit_transform(df[columns_to_normalize])
     return df
 
 
-def feature_engineering(df):
+def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     df["ratio_insertions_deletions"] = df["insertions"] / df["deletions"]
     df["msg_length"] = df["msg"].apply(len)
     return df
 
 
-def binary_encoding(df):
+def binary_encoding(df: pd.DataFrame) -> pd.DataFrame:
+    df["merge"] = df["merge"].astype(int)
     df["is_bug"] = df["is_bug"].astype(int)
     return df
 
 
-def one_hot_encoding_author_name(df):
+def one_hot_encoding_author_name(df: pd.DataFrame) -> pd.DataFrame:
     df = pd.get_dummies(df, columns=["author_name"])
     return df
 
 
-def transformation_date(df):
+def transformation_date(df: pd.DataFrame) -> pd.DataFrame:
     df["author_date"] = df["author_date"].apply(
         lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S%z")
     )
     df["day_of_week"] = df["author_date"].apply(lambda x: x.weekday())
     df["hour_of_day"] = df["author_date"].apply(lambda x: x.hour)
     df.drop("author_date", axis=1, inplace=True)
+    df.drop("author_timezone", axis=1, inplace=True)
     return df
 
 
-def tf_idf_msg(df):
+def tf_idf_msg(df: pd.DataFrame) -> pd.DataFrame:
     tfidf_vectorizer = TfidfVectorizer()
     tfidf_matrix = tfidf_vectorizer.fit_transform(df["msg"])
     tfidf_df = pd.DataFrame(
@@ -74,7 +80,7 @@ def tf_idf_msg(df):
     return df
 
 
-def preprocess(df):
+def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df = drop_hash(df)
     df = drop_outliers(df)
     df = normalization(df)
@@ -91,3 +97,4 @@ if __name__ == "__main__":
 
     df = pd.read_json(NORMAL_COMMITS_JSONL, lines=True)
     df = preprocess(df)
+    print(df.head())
