@@ -4,12 +4,11 @@ import re
 
 RE_FIX_COMMIT = re.compile(r"(?i)(fix(e[sd])?|bug(s)?)")
 
-DATASET_DIRECTORY = "../dataset"
 DATASET_BASENAME = "buggy_hashes"
 DATASET_EXTENSION = ".txt"
 
 
-def gather(git_repo_path: str) -> None:
+def gather(git_repo_path: str, dataset_directory: str) -> None:
     repo = pydriller.Git(git_repo_path)
 
     buggy_commits = {
@@ -21,7 +20,7 @@ def gather(git_repo_path: str) -> None:
     }
 
     file_name = (
-        DATASET_DIRECTORY
+        dataset_directory
         + "/"
         + DATASET_BASENAME
         + "_"
