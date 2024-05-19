@@ -1,16 +1,18 @@
 import pandas as pd
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler
+import pickle
 
 
 def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
-    df = df[df["lines"] < df["lines"].quantile(0.99)]
+    if df.shape[0] > 10:
+        df = df[df["lines"] < df["lines"].quantile(0.99)]
     return df
 
 
-def normalization(df: pd.DataFrame) -> pd.DataFrame:
-    scaler = StandardScaler()
+def normalization(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFrame:
+    my_scaler = scaler if scaler else StandardScaler()
     columns_to_normalize = [
         "deletions",
         "insertions",
@@ -21,7 +23,12 @@ def normalization(df: pd.DataFrame) -> pd.DataFrame:
         "dmm_unit_interfacing",
     ]
     df = df.astype({column: float for column in columns_to_normalize})
-    df.loc[:, columns_to_normalize] = scaler.fit_transform(df[columns_to_normalize])
+    df.loc[:, columns_to_normalize] = my_scaler.fit_transform(df[columns_to_normalize])
+
+    if not scaler:
+        with open("../../scalers/scaler.pkl", "wb") as f:
+            pickle.dump(my_scaler, f)
+
     return df
 
 
@@ -56,12 +63,15 @@ def transformation_date(df: pd.DataFrame) -> pd.DataFrame:
 
 def tf_idf_msg(df: pd.DataFrame) -> pd.DataFrame:
     tfidf_vectorizer = TfidfVectorizer()
-    tfidf_matrix = tfidf_vectorizer.fit_transform(df["msg"])
-    tfidf_df = pd.DataFrame(
-        tfidf_matrix.toarray(), columns=tfidf_vectorizer.get_feature_names_out()
-    )
-    tfidf_df.columns = [f"{column}_tfidf" for column in tfidf_df.columns]
-    df = pd.concat([df, tfidf_df], axis=1)
+    try:
+        tfidf_matrix = tfidf_vectorizer.fit_transform(df["msg"])
+        tfidf_df = pd.DataFrame(
+            tfidf_matrix.toarray(), columns=tfidf_vectorizer.get_feature_names_out()
+        )
+        tfidf_df.columns = [f"{column}_tfidf" for column in tfidf_df.columns]
+        df = pd.concat([df, tfidf_df], axis=1)
+    except ValueError:  # Empty vocabulary
+        pass
     df = df.drop("msg", axis=1)
     return df
 
@@ -82,7 +92,7 @@ def drop_merge_commits(df):
     return df
 
 
-def preprocess(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFrame:
     df = df.drop("hash", axis=1)
     df = drop_outliers(df)
     df = feature_engineering(df)
@@ -90,7 +100,7 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df = one_hot_encoding_author_name(df)
     df = transformation_date(df)
     df = tf_idf_msg(df)
-    df = normalization(df)
+    df = normalization(df, scaler)
     df = dmm_fill_na_with_mean(df)
     df = drop_merge_commits(df)
     return df

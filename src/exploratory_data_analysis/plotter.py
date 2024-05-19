@@ -281,7 +281,6 @@ class Plotter:
 
     def correlation_matrix(self) -> None:
         all_commits = pd.concat([self.normal_commits, self.buggy_commits])
-        # drop all non-numeric columns
         all_commits.drop(
             ["hash", "msg", "author_name", "author_date", "author_timezone", "merge"],
             axis=1,
