@@ -12,7 +12,6 @@ def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def normalization(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFrame:
-    my_scaler = scaler if scaler else StandardScaler()
     columns_to_normalize = [
         "deletions",
         "insertions",
@@ -23,6 +22,13 @@ def normalization(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFra
         "dmm_unit_interfacing",
     ]
     df = df.astype({column: float for column in columns_to_normalize})
+
+    if scaler:
+        print("Using existing scaler")
+        df.loc[:, columns_to_normalize] = scaler.transform(df[columns_to_normalize])
+        return df
+
+    my_scaler = StandardScaler()
     df.loc[:, columns_to_normalize] = my_scaler.fit_transform(df[columns_to_normalize])
 
     if not scaler:
