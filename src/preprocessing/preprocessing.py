@@ -11,7 +11,12 @@ def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def normalization(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFrame:
+def normalization(
+    df: pd.DataFrame, scaler: StandardScaler = None, save_location: str = None
+) -> pd.DataFrame:
+    if not (scaler or save_location):
+        raise ValueError("scaler or save_location must be provided")
+
     columns_to_normalize = [
         "deletions",
         "insertions",
@@ -24,16 +29,14 @@ def normalization(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFra
     df = df.astype({column: float for column in columns_to_normalize})
 
     if scaler:
-        print("Using existing scaler")
         df.loc[:, columns_to_normalize] = scaler.transform(df[columns_to_normalize])
         return df
 
     my_scaler = StandardScaler()
     df.loc[:, columns_to_normalize] = my_scaler.fit_transform(df[columns_to_normalize])
 
-    if not scaler:
-        with open("../../scalers/scaler.pkl", "wb") as f:
-            pickle.dump(my_scaler, f)
+    with open(save_location, "wb") as f:
+        pickle.dump(my_scaler, f)
 
     return df
 
