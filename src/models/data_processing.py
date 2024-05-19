@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import ConfusionMatrixDisplay, classification_report
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import plot_tree
 
 from src.models.models import Model
 
 
-def load_data(preprocessed_dataset_directory: str) -> pd.DataFrame:
-    df = pd.read_csv(preprocessed_dataset_directory)
+def load_data(preprocessed_dataset_location: str) -> pd.DataFrame:
+    df = pd.read_csv(preprocessed_dataset_location)
     df = df.fillna(0)
     return df
 
@@ -26,6 +26,8 @@ def undersample(df: pd.DataFrame) -> pd.DataFrame:
 def oversample(df: pd.DataFrame) -> pd.DataFrame:
     df_normal = df[df["is_bug"] == 0]
     df_buggy = df[df["is_bug"] == 1]
+    if len(df_buggy) == 0:
+        return df
     df_buggy = df_buggy.sample(n=len(df_normal), replace=True, random_state=0)
     return pd.concat([df_normal, df_buggy])
 
@@ -83,10 +85,9 @@ def generate_classification_report(
 
     if save_location:
         with open(
-            f"{save_location}/{model.__class__.__class__.__name__}_classification_report.txt",
+            f"{save_location}/{model.__class__.__name__}_classification_report.txt",
             "w+",
         ) as file:
-            file.write("\n")
             file.write(report)
 
 
