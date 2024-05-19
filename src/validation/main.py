@@ -25,12 +25,16 @@ def main() -> None:
     normal_commit = False
 
     commit_hashes_actual = [
-        ("3ba9d4756509528dfed16ea4a1ab99ece9c4e610", normal_commit),
-        ("d5d17f8e123d475746cb8be340fb3853af517c37", normal_commit),
-        ("e09d1cb030f12e86efa14010c8541c49e1483cfe", normal_commit),
-        ("5f3fd88b64a461e73327ffe5406a5062431c7f04", normal_commit),
-        ("3e7c90919fb892ece6308fc6640430f70b282f2a", normal_commit),
-        ("6d0c0bf8da592dc7fce57729564511ba3881cd81", buggy_commit),
+        ("b782c41b6e85705857f1db103289d4de3e2c52af", normal_commit),
+        ("46a1346ad498a17c56c56b7ea2608899a7327575", normal_commit),
+        ("9271e595a00692f789a23cdb67b12a4c35ef6240", normal_commit),
+        ("432ec1f82479a0fb85a62d783170fcc050901390", normal_commit),
+        ("31c5fe5f634faf75bca527e0cdc5403f1c1cc7f4", buggy_commit),
+        ("60a3edd6a2d7a454c9c30d8983e8a3eec1db4d4f", normal_commit),
+        ("6622a7d3933c5f5a794e0b2561096de811fc98e6", buggy_commit),
+        ("f4b5adc41dfa495037b9c17b0874444fe40e543d", buggy_commit),
+        ("8627e7025912261882b32394f6ea467e791f4ef8", buggy_commit),
+        ("9580c830fb091476a468aa1b54241dd7efa5c25d", buggy_commit),
     ]
 
     prediction_results = validate_model_on_commits(

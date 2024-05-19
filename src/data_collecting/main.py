@@ -3,7 +3,7 @@ from src.data_collecting.serialize_commits import serialize
 from src.data_collecting.deserialize_commits import deserialize
 
 
-GIT_REPO_PATH = "C:/Users/mikol/Desktop/vscode"
+GIT_REPO_PATH = "../../vscode"
 DATASET_DIRECTORY = "../../raw_dataset"
 BUGGY_HASHES_PATH = f"{DATASET_DIRECTORY}/buggy_hashes.txt"
 NORMAL_COMMITS_PATH = f"{DATASET_DIRECTORY}/normal_commits.jsonl"

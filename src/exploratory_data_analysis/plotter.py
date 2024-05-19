@@ -288,7 +288,7 @@ class Plotter:
         )
 
         fig, ax = plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
-        corr = all_commits.corr()
+        corr = all_commits.corr("pearson")
         mask = np.triu(np.ones_like(corr, dtype=bool))
         sns.heatmap(
             corr,

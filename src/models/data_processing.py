@@ -116,9 +116,9 @@ def models_testing(
     save_report_location: str = "",
 ) -> None:
     df = load_data(preprocessed_dataset_directory)
-    if sampling == "undersample":
+    if sampling == "undersampled":
         df = undersample(df)
-    elif sampling == "oversample":
+    elif sampling == "oversampled":
         df = oversample(df)
 
     X_train, X_test, y_train, y_test = split_data(df, test_size, random_state)
