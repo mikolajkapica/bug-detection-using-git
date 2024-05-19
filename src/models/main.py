@@ -6,14 +6,16 @@ from src.models.data_processing import (
 from src.models.models import models
 
 
-PREPROCESSED_DATASET_DIRECTORY = "../../preprocessed_dataset"
+PREPROCESSED_DATASET = "../../preprocessed_dataset/commits.csv"
 
 
 def main() -> None:
     models_testing(
-        PREPROCESSED_DATASET_DIRECTORY,
+        PREPROCESSED_DATASET,
         models,
-        # save_location="../../graphs/results",
+        save_models_location="../../trained_models/oversampling",
+        save_confusion_matrix_location="../../graphs/results_oversampling",
+        save_classification_report_location="../../classification_reports",
         sampling="oversample",
     )
     # train_and_save(models[0], PREPROCESSED_DATASET_DIRECTORY, "../../trained_models")
