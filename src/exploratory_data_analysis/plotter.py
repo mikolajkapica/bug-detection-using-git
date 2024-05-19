@@ -38,8 +38,8 @@ class Plotter:
         self.location = location
         self.is_save = is_save
 
-    def save_image(self, plt: plt, name: str) -> None:
-        plt.savefig(f"{self.location}/{name}.png")
+    def save_image(self, plot: plt, name: str) -> None:
+        plot.savefig(f"{self.location}/{name}.png")
 
     def count_commits(self) -> None:
         normal_commits_count = len(self.normal_commits)

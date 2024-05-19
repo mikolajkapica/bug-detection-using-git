@@ -1,11 +1,10 @@
-from datetime import datetime
 import pandas as pd
-import os
 
 from src.exploratory_data_analysis import plotter
 
 NORMAL_COMMITS_JSONL = "../../raw_dataset/normal_commits.jsonl"
 BUGGY_COMMITS_JSONL = "../../raw_dataset/buggy_commits.jsonl"
+SAVE_LOCATION = "../../graphs"
 
 
 def main() -> None:
@@ -21,12 +20,8 @@ def main() -> None:
     normal_df = normal_df[normal_df["merge"] == False]
     buggy_df = buggy_df[buggy_df["merge"] == False]
 
-    # create directory to save plots
-    location = "../../graphs/graphs_" + datetime.now().strftime("%Y-%m-%d_%H-%M")
-    os.makedirs(location, exist_ok=True)
-
     # create plots
-    p = plotter.Plotter(normal_df, buggy_df, location, is_save=True)
+    p = plotter.Plotter(normal_df, buggy_df, SAVE_LOCATION, is_save=True)
     p.count_commits()
     p.means_of_lines()
     p.medians_of_lines()
