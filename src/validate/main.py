@@ -19,14 +19,13 @@ from src.validate.validate import validate_commit
 
 
 GIT_REPO_PATH = "C:/Users/mikol/Desktop/vscode"
-PREPROCESSED_DATASET_DIRECTORY = "../../preprocessed_dataset"
-TRAINED_MODELS_PATH = "../../trained_models"
+PREPROCESSED_DATASET = "../../preprocessed_dataset/commits.csv"
+TRAINED_MODELS_PATH = "../../trained_models/oversampling"
 MODEL_NAME = "RandomForestClassifier"
 
 
 def main() -> None:
-    df = load_data(PREPROCESSED_DATASET_DIRECTORY)
-    df = undersample(df)
+    df = load_data(PREPROCESSED_DATASET)
     X_train, X_test, y_train, y_test = split_data(df, 0.2, 0)
     X_train_columns = X_train.columns
     # model = train_model(RandomForestClassifier(), X_train, y_train)
@@ -48,12 +47,22 @@ def main() -> None:
     # )
 
     # DOESNT WORK
-    with open("../../raw_dataset/normal_commits.jsonl") as f:
-        commit_hashes = pd.read_json(f, lines=True)["hash"].tolist()[:200]
+    # with open("../../raw_dataset/normal_commits.jsonl") as f:
+    #     commit_hashes = pd.read_json(f, lines=True)["hash"].tolist()[:100]
 
     repo = pydriller.Git(GIT_REPO_PATH)
-    commits = [repo.get_commit(h) for h in commit_hashes]
-    commits = [
+    commit_hashes = [
+        "3ba9d4756509528dfed16ea4a1ab99ece9c4e610",
+        "d5d17f8e123d475746cb8be340fb3853af517c37",
+        "e09d1cb030f12e86efa14010c8541c49e1483cfe",
+        "5f3fd88b64a461e73327ffe5406a5062431c7f04",
+        "3e7c90919fb892ece6308fc6640430f70b282f2a",
+        "6d0c0bf8da592dc7fce57729564511ba3881cd81",
+    ]
+
+    commits = map(lambda commit_hash: repo.get_commit(commit_hash), commit_hashes)
+
+    commits_data = [
         {
             "hash": commit.hash,
             "msg": commit.msg,
@@ -72,15 +81,16 @@ def main() -> None:
         }
         for commit in commits
     ]
-    df = pd.DataFrame(commits)
-    df = preprocess(df)
+    df = pd.DataFrame(commits_data)
+    scaler = pickle.load(open(f"../../scalers/scaler.pkl", "rb"))
+    df = preprocess(df, scaler)
     # save the pd to csv
     df.to_csv("test.csv")
-    y_test = df["is_bug"]
     X_test = df.reindex(columns=X_train_columns, fill_value=0)
     y_pred = model.predict(X_test)
+    y_actual = [False, False, False, False, False, True]
     print(
-        f"Predicted right: {sum([1 for i in range(len(y_pred)) if y_pred[i] == y_test.iloc[i]])}/{len(y_pred)}"
+        f"Predicted right: {sum([1 for i in range(len(y_pred)) if y_pred[i] == y_actual[i]])}/{len(y_pred)}"
     )
 
 
