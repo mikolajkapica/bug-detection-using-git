@@ -13,9 +13,7 @@ from src.models.models import Model
 
 
 def load_data(preprocessed_dataset_directory: str) -> pd.DataFrame:
-    df_normal = pd.read_csv(f"{preprocessed_dataset_directory}/normal_commits.csv")
-    df_buggy = pd.read_csv(f"{preprocessed_dataset_directory}/buggy_commits.csv")
-    df = pd.concat([df_normal, df_buggy])
+    df = pd.read_csv(preprocessed_dataset_directory)
     df = df.fillna(0)
     return df
 
@@ -65,13 +63,25 @@ def plot_confusion_matrix(
     plt.show()
 
 
-def get_classification_report(model: Model, y_test, y_pred) -> str:
-    return (
+def get_classification_report(
+    model: Model, y_test, y_pred, save_location: str = ""
+) -> str:
+    cr = (
         "Classification Report for "
         + model.__class__.__name__
         + "\n"
         + classification_report(y_test, y_pred)
     )
+
+    print(cr)
+
+    if save_location:
+        with open(
+            f"{save_location}/{model.__class__.__class__.__name__}_classification_report.txt",
+            "w+",
+        ) as file:
+            file.write("\n")
+            file.write(cr)
 
 
 def models_testing(
@@ -79,8 +89,10 @@ def models_testing(
     models: list[Callable[[], Model]],
     test_size: float = 0.2,
     random_state: int = 0,
-    save_location: str = "",
-    sampling: str = "none",
+    sampling: str = "",
+    save_models_location: str = "",
+    save_confusion_matrix_location: str = "",
+    save_classification_report_location: str = "",
 ) -> None:
     df = load_data(preprocessed_dataset_directory)
     if sampling == "undersample":
@@ -90,12 +102,16 @@ def models_testing(
     X_train, X_test, y_train, y_test = split_data(df, test_size, random_state)
     for model in models:
         model = train_model(model(), X_train, y_train)
-        pickle.dump(
-            model, open(f"../../trained_models/{model.__class__.__name__}.pkl", "wb")
-        )
+        if save_models_location:
+            pickle.dump(
+                model,
+                open(f"{save_models_location}/{model.__class__.__name__}.pkl", "wb"),
+            )
         y_pred = predict(model, X_test)
-        plot_confusion_matrix(model, y_test, y_pred, save_location)
-        print(get_classification_report(model, y_test, y_pred))
+        plot_confusion_matrix(model, y_test, y_pred, save_confusion_matrix_location)
+        get_classification_report(
+            model, y_test, y_pred, save_classification_report_location
+        )
 
 
 def plot_decision_tree(preprocessed_dataset_directory: str, save_location: str) -> None:
