@@ -8,7 +8,7 @@ DATASET_DIRECTORY = "../../raw_dataset"
 BUGGY_HASHES_PATH = f"{DATASET_DIRECTORY}/buggy_hashes.txt"
 NORMAL_COMMITS_PATH = f"{DATASET_DIRECTORY}/normal_commits.jsonl"
 BUGGY_COMMITS_PATH = f"{DATASET_DIRECTORY}/buggy_commits.jsonl"
-QUANTITY_OF_COMMITS = 10000
+QUANTITY_OF_COMMITS = 10_000
 
 
 def main():
