@@ -28,6 +28,6 @@ def gather(git_repo_path: str, raw_dataset_directory: str) -> None:
         + DATASET_EXTENSION
     )
 
-    with open(file_name, "w+", newline="") as f:
+    with open(file_name, "w", newline="") as f:
         for commit in buggy_commits:
             f.write(f"{commit}\n")
