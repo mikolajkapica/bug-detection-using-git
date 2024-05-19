@@ -11,6 +11,7 @@ def main() -> None:
     normal_commits = pd.read_json(NORMAL_COMMITS_JSONL, lines=True)
     buggy_commits = pd.read_json(BUGGY_COMMITS_JSONL, lines=True)
     commits = pd.concat([normal_commits, buggy_commits])
+    commits.reset_index(drop=True, inplace=True)
 
     preprocessed_commits = preprocess(commits)
 
