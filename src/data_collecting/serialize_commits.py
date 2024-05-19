@@ -12,15 +12,14 @@ def serialize(
     repo = pydriller.Git(git_repo_path)
     all_commits = list(repo.get_list_commits())[:quantity_of_commits]
 
-    with open(buggy_hashes_path, "w+") as f:
-        bug_commits = sorted([commit.strip() for commit in f.readlines()])
+    with open(buggy_hashes_path, "r") as f:
+        buggy_commits = sorted([commit.strip() for commit in f.readlines()])
 
     normal_commits_path = open(normal_commits_path, "a")
     buggy_commits_path = open(buggy_commits_path, "a")
 
     for i, commit in enumerate(all_commits):
-        is_bug = commit.hash in bug_commits
-
+        is_bug = commit.hash in buggy_commits
         commit_data = {
             "hash": commit.hash,
             "msg": commit.msg,

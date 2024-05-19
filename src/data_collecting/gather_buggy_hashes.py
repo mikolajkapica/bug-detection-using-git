@@ -8,7 +8,7 @@ DATASET_BASENAME = "buggy_hashes"
 DATASET_EXTENSION = ".txt"
 
 
-def gather(git_repo_path: str, dataset_directory: str) -> None:
+def gather(git_repo_path: str, raw_dataset_directory: str) -> None:
     repo = pydriller.Git(git_repo_path)
 
     buggy_commits = {
@@ -20,7 +20,7 @@ def gather(git_repo_path: str, dataset_directory: str) -> None:
     }
 
     file_name = (
-        dataset_directory
+        raw_dataset_directory
         + "/"
         + DATASET_BASENAME
         + "_"
