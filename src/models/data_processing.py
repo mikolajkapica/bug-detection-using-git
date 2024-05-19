@@ -1,14 +1,12 @@
-import pickle
 from typing import Callable
+import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
-from pandas import Series
+
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    ConfusionMatrixDisplay,
-    classification_report,
-)
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report
 from sklearn.tree import DecisionTreeClassifier, plot_tree
+
 from src.models.models import Model
 
 
@@ -41,17 +39,25 @@ def split_data(df: pd.DataFrame, test_size: float, random_state: int) -> tuple:
     return X_train, X_test, y_train, y_test
 
 
-def train_model(model: Model, X_train: pd.DataFrame, y_train: pd.DataFrame) -> Model:
+def train_model(
+    model: Model, X_train: pd.DataFrame, y_train: pd.DataFrame, save_location: str = ""
+) -> Model:
     model.fit(X_train, y_train)
+
+    if save_location:
+        pickle.dump(
+            model, open(f"{save_location}/{model.__class__.__name__}.pkl", "wb")
+        )
+
     return model
 
 
-def predict(model: Model, X_test: pd.DataFrame) -> Series:
+def predict(model: Model, X_test: pd.DataFrame) -> pd.Series:
     return model.predict(X_test)
 
 
-def plot_confusion_matrix(
-    model: Model, y_test: Series, y_pred: Series, save_location: str = ""
+def generate_confusion_matrix(
+    model: Model, y_test: pd.Series, y_pred: pd.Series, save_location: str = ""
 ) -> None:
     plt.figure(figsize=(12, 8))
     ConfusionMatrixDisplay.from_predictions(y_test, y_pred)
@@ -63,17 +69,17 @@ def plot_confusion_matrix(
     plt.show()
 
 
-def get_classification_report(
+def generate_classification_report(
     model: Model, y_test, y_pred, save_location: str = ""
-) -> str:
-    cr = (
+) -> None:
+    report = (
         "Classification Report for "
         + model.__class__.__name__
         + "\n"
         + classification_report(y_test, y_pred)
     )
 
-    print(cr)
+    print(report)
 
     if save_location:
         with open(
@@ -81,7 +87,21 @@ def get_classification_report(
             "w+",
         ) as file:
             file.write("\n")
-            file.write(cr)
+            file.write(report)
+
+
+def plot_decision_tree(
+    decision_tree_classifier: Model,
+    save_location: str,
+) -> None:
+    plt.figure(figsize=(40, 30))
+    plot_tree(decision_tree_classifier, filled=True)
+    plt.title("Decision Tree")
+
+    if save_location:
+        plt.savefig(f"{save_location}/decision_tree.png")
+
+    plt.show()
 
 
 def models_testing(
@@ -92,49 +112,18 @@ def models_testing(
     sampling: str = "",
     save_models_location: str = "",
     save_confusion_matrix_location: str = "",
-    save_classification_report_location: str = "",
+    save_report_location: str = "",
 ) -> None:
     df = load_data(preprocessed_dataset_directory)
     if sampling == "undersample":
         df = undersample(df)
     elif sampling == "oversample":
         df = oversample(df)
+
     X_train, X_test, y_train, y_test = split_data(df, test_size, random_state)
+
     for model in models:
-        model = train_model(model(), X_train, y_train)
-        if save_models_location:
-            pickle.dump(
-                model,
-                open(f"{save_models_location}/{model.__class__.__name__}.pkl", "wb"),
-            )
+        model = train_model(model(), X_train, y_train, save_models_location)
         y_pred = predict(model, X_test)
-        plot_confusion_matrix(model, y_test, y_pred, save_confusion_matrix_location)
-        get_classification_report(
-            model, y_test, y_pred, save_classification_report_location
-        )
-
-
-def plot_decision_tree(preprocessed_dataset_directory: str, save_location: str) -> None:
-    df = load_data(preprocessed_dataset_directory)
-    df = oversample(df)
-    X_train, X_test, y_train, y_test = split_data(df, 0.2, 0)
-    model = DecisionTreeClassifier()
-    model.fit(X_train, y_train)
-    plt.figure(figsize=(40, 30))
-    plot_tree(model, filled=True)
-    plt.title("Decision Tree")
-    plt.savefig(f"{save_location}/decision_tree.png")
-    plt.show()
-
-
-def train_and_save(
-    model: Callable[[], Model], preprocessed_dataset_directory: str, save_location: str
-) -> None:
-    df = load_data(preprocessed_dataset_directory)
-    df = oversample(df)
-    X_train, X_test, y_train, y_test = split_data(df, 0.2, 0)
-    model = train_model(model(), X_train, y_train)
-    y_pred = predict(model, X_test)
-    plot_confusion_matrix(model, y_test, y_pred)
-    print(get_classification_report(model, y_test, y_pred))
-    pickle.dump(model, open(f"{save_location}/{model.__class__.__name__}.pkl", "wb"))
+        generate_confusion_matrix(model, y_test, y_pred, save_confusion_matrix_location)
+        generate_classification_report(model, y_test, y_pred, save_report_location)
