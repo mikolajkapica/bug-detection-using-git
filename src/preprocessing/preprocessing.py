@@ -14,9 +14,6 @@ def drop_outliers(df: pd.DataFrame) -> pd.DataFrame:
 def normalization(
     df: pd.DataFrame, scaler: StandardScaler = None, save_location: str = None
 ) -> pd.DataFrame:
-    if not (scaler or save_location):
-        raise ValueError("scaler or save_location must be provided")
-
     columns_to_normalize = [
         "deletions",
         "insertions",
@@ -30,13 +27,13 @@ def normalization(
 
     if scaler:
         df.loc[:, columns_to_normalize] = scaler.transform(df[columns_to_normalize])
-        return df
+    else:
+        scaler = StandardScaler()
+        df.loc[:, columns_to_normalize] = scaler.fit_transform(df[columns_to_normalize])
 
-    my_scaler = StandardScaler()
-    df.loc[:, columns_to_normalize] = my_scaler.fit_transform(df[columns_to_normalize])
-
-    with open(save_location, "wb") as f:
-        pickle.dump(my_scaler, f)
+    if save_location:
+        with open(save_location, "wb") as f:
+            pickle.dump(scaler, f)
 
     return df
 
@@ -101,7 +98,14 @@ def drop_merge_commits(df):
     return df
 
 
-def preprocess(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFrame:
+def preprocess(
+    df: pd.DataFrame,
+    scaler: StandardScaler = None,
+    scaler_save_location: str = "",
+) -> pd.DataFrame:
+    if not (scaler or scaler_save_location):
+        raise ValueError("scaler or save_location must be provided")
+
     df = df.drop("hash", axis=1)
     df = drop_outliers(df)
     df = feature_engineering(df)
@@ -109,7 +113,7 @@ def preprocess(df: pd.DataFrame, scaler: StandardScaler = None) -> pd.DataFrame:
     df = one_hot_encoding_author_name(df)
     df = transformation_date(df)
     df = tf_idf_msg(df)
-    df = normalization(df, scaler)
+    df = normalization(df, scaler, scaler_save_location)
     df = dmm_fill_na_with_mean(df)
     df = drop_merge_commits(df)
     return df
