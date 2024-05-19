@@ -2,12 +2,12 @@ import pickle
 import pydriller
 
 from src.models.data_processing import load_data
-from src.validate.validate import validate_model_on_commits
+from src.validation.validate import validate_model_on_commits
 
 GIT_REPO_PATH = "C:/Users/mikol/Desktop/vscode"
 PREPROCESSED_DATASET = "../../preprocessed_dataset/commits.csv"
-SCALER_PATH = "../../trained_models/oversampling/scaler.pkl"
-MODEL_PATH = "../../trained_models/oversampling/RandomForestClassifier.pkl"
+SCALER_PATH = "../../preprocessed_dataset/scaler.pkl"
+MODEL_PATH = "../../trained_models/oversampled/RandomForestClassifier.pkl"
 
 
 def main() -> None:
