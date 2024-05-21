@@ -152,40 +152,55 @@ class Plotter:
         plt.show()
 
     def authors_ratio(self, n: int = 10) -> None:
-        author_normal_commits = (
-            self.normal_commits["author_name"].value_counts().nlargest(n)
+        xs = (
+            pd.concat([self.normal_commits, self.buggy_commits], ignore_index=True)[
+                "author_name"
+            ]
+            .value_counts()
+            .nlargest(n)
+            .sort_values(ascending=False)
+            .index
         )
-        author_buggy_commits = (
-            self.buggy_commits["author_name"].value_counts().nlargest(n)
-        )
+        ys_buggy = [
+            len(self.buggy_commits[self.buggy_commits["author_name"] == x]) for x in xs
+        ]
+        ys_normal = [
+            len(self.normal_commits[self.normal_commits["author_name"] == x])
+            for x in xs
+        ]
 
-        fig, ax = plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
-        sns.barplot(
-            x=author_normal_commits.index,
-            y=author_normal_commits,
+        index = np.arange(len(xs))
+        bar_width = 0.35
+
+        plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
+        plt.bar(
+            index,
+            ys_normal,
+            bar_width,
             label="Normal commits",
             color=GREEN,
-            ax=ax,
         )
-        sns.barplot(
-            x=author_buggy_commits.index,
-            y=author_buggy_commits,
+        plt.bar(
+            index + bar_width,
+            ys_buggy,
+            bar_width,
             label="Buggy commits",
             color=PURPLE,
-            ax=ax,
         )
-
-        plt.title("Authors ratio")
+        plt.title("Number of Buggy and Normal Commits by the Top 10 Authors")
         plt.ylabel("Quantity of commits")
-        plt.xticks(rotation=-45, ha="left")
-        plt.subplots_adjust(bottom=0.3)
+        plt.xticks(index + bar_width / 2, xs, rotation=-45, ha="left")
+        plt.subplots_adjust(bottom=0.2)
+        plt.legend()
 
         if self.is_save:
-            self.save_image(plt, "authors_ratio")
+            self.save_image(plt, "top_authors")
 
         plt.show()
 
     def weekday_ratio(self) -> None:
+        bar_width = 0.35
+
         days_normal_commits: Counter[int] = Counter(
             self.normal_commits["author_date"].apply(
                 lambda x: datetime.strptime(x, "%Y-%m-%d %H:%M:%S%z").weekday()
@@ -209,27 +224,28 @@ class Plotter:
 
         commits = [days_normal_commits[i] for i in range(7)]
         bugs = [days_buggy_commits[i] for i in range(7)]
+        indexes = np.arange(len(days))
 
-        fig, ax = plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
-        sns.barplot(
-            x=days,
-            y=commits,
+        plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
+        plt.bar(
+            indexes,
+            commits,
+            bar_width,
             label="Normal commits",
             color=GREEN,
-            ax=ax,
         )
-        sns.barplot(
-            x=days,
-            y=bugs,
+        plt.bar(
+            indexes + bar_width,
+            bugs,
+            bar_width,
             label="Buggy commits",
             color=PURPLE,
-            ax=ax,
         )
 
-        plt.title("Weekday ratio")
+        plt.title("Number of Buggy and Normal Commits by Weekday")
         plt.ylabel("Quantity of commits")
-        plt.xticks(rotation=-45, ha="left")
-        plt.subplots_adjust(bottom=0.3)
+        plt.xticks(rotation=-45, ha="left", ticks=indexes + bar_width / 2, labels=days)
+        plt.subplots_adjust(bottom=0.2)
         plt.legend()
 
         if self.is_save:
@@ -252,26 +268,29 @@ class Plotter:
         hours = [str(i) for i in range(24)]
         normal_commits = [hours_normal_commits[i] for i in range(24)]
         buggy_commits = [hours_buggy_commits[i] for i in range(24)]
+        indexes = np.arange(len(hours))
+        bar_width = 0.35
 
-        fig, ax = plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
-        sns.barplot(
-            x=hours,
-            y=normal_commits,
+        plt.subplots(figsize=(SIZE_WIDTH, SIZE_HEIGHT))
+        plt.bar(
+            indexes,
+            normal_commits,
+            bar_width,
             label="Normal commits",
             color=GREEN,
-            ax=ax,
         )
-        sns.barplot(
-            x=hours,
-            y=buggy_commits,
+        plt.bar(
+            indexes + bar_width,
+            buggy_commits,
+            bar_width,
             label="Buggy commits",
             color=PURPLE,
-            ax=ax,
         )
 
-        plt.title("Hour ratio")
+        plt.title("Number of Buggy and Normal Commits by Hour")
         plt.ylabel("Quantity of commits")
-        plt.xticks(ha="center")
+        plt.xlabel("Hour")
+        plt.xticks(ha="center", ticks=indexes + bar_width / 2, labels=hours)
         plt.legend()
 
         if self.is_save:
